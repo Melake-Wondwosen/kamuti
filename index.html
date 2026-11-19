@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f7f4">
+<title>Kamuti Leads</title>
+<style>
+:root{color-scheme:light;--bg:#f6f7f4;--panel:#fff;--line:#e2e8e4;--ink:#162c27;--muted:#52675d;--forest:#12372d;--accent:#285e45;--mint:#d9ead8;--radius:22px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,sans-serif}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #408358;outline-offset:3px}button[hidden],section[hidden]{display:none}h1,h2,h3,p{margin:0}.wrap{max-width:1352px;margin-inline:auto;padding-inline:clamp(18px,4.6vw,64px)}header{position:sticky;top:0;background:#f6f7f4f5;border-bottom:1px solid var(--line);z-index:2;backdrop-filter:blur(14px)}.header{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:12px;font-size:17px;font-weight:780;letter-spacing:-.04em;white-space:nowrap}.mark{display:grid;place-items:center;width:40px;height:40px;background:var(--forest);color:#ddf3d8;border-radius:13px;font-size:23px}.button,.chip{border:0;border-radius:10px;background:transparent;padding:10px 14px;color:var(--muted);font-size:14px;font-weight:660;white-space:nowrap}.chip:hover,.button:hover{filter:brightness(.94)}.preview{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid #d8e3d8;border-radius:30px;font-size:13px;color:#3a6852;white-space:nowrap}.preview::before{content:'';width:7px;height:7px;background:#5d956c;border-radius:50%}main{padding-block:32px calc(116px + env(safe-area-inset-bottom))}.hero{position:relative;overflow:hidden;isolation:isolate;display:flex;justify-content:space-between;align-items:end;gap:32px;padding:clamp(26px,4.8vw,57px);border-radius:28px;background:linear-gradient(117deg,#0e2b24 4%,#153f33 63%,#2f674a);color:#f7faf4}.hero::before,.hero::after{content:'';position:absolute;z-index:-1;inset:auto -4% -130px auto;width:430px;height:430px;border:1px solid #afcda52d;border-radius:50%;box-shadow:0 0 0 32px #afcda51e,0 0 0 66px #afcda519,0 0 0 100px #afcda513;transform:rotate(-14deg) scaleY(.76)}.hero::after{inset:auto -120px auto auto;top:-160px;transform:scale(.7) rotate(30deg)}.hero h1{font:500 clamp(44px,6.2vw,82px)/.99 Georgia,serif;letter-spacing:-.062em;max-width:12ch}.hero p{color:#d0e1d2;margin-top:17px;font-size:16px;max-width:42ch}.summary{margin:0;display:grid;grid-template-columns:repeat(3,minmax(78px,1fr));gap:10px}.stat{min-width:92px;border-radius:16px;background:#e7f2e513;border:1px solid #e7f2e52e;padding:12px 15px;backdrop-filter:blur(7px)}.stat dt{font-size:13px;color:#d1e2d5}.stat dd{margin:1px 0 0;font-size:24px;letter-spacing:-.07em;font-weight:670}.section{margin-top:33px}.section-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px}.section-head h2{font-size:25px;letter-spacing:-.05em}.tools,.filters,.fields{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.input{height:42px;max-width:100%;padding:8px 12px;background:white;color:var(--ink);border:1px solid #cbd8d0;border-radius:11px;font-size:14px}.chip{background:white;border:1px solid var(--line);padding:8px 13px}.chip[aria-pressed=true]{background:var(--mint);border-color:var(--mint);color:#18402d}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}.card{overflow:hidden;border-radius:var(--radius);background:var(--panel);border:1px solid var(--line);box-shadow:0 5px 16px #25372c08}.event-card{transition:transform .18s ease,box-shadow .18s ease}.event-card:hover{transform:translateY(-3px);box-shadow:0 11px 22px #25372c16}.photo{height:clamp(145px,16vw,213px);background:#d1ded1 linear-gradient(135deg,#cfddd0,#6b9683);position:relative;overflow:hidden}.photo img{width:100%;height:100%;object-fit:cover;display:block}.tag{position:absolute;left:13px;top:13px;background:#fffffff2;color:#1a3f32;border-radius:8px;padding:4px 9px;font-size:13px;font-weight:650}.card-body{padding:18px}.card h3{font-size:20px;font-weight:740;line-height:1.14;letter-spacing:-.045em}.meta{font-size:14px;color:var(--muted);margin-top:8px}.card p{margin-top:10px;color:var(--muted);font-size:15px}.card-bar{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:17px;padding-top:13px;border-top:1px solid var(--line)}.button{background:#e8f0e7;color:#244d38}.button.primary{background:#20533b;color:#fff}.button[aria-pressed=true]{background:#d6e8d6;color:#17412c}.notice{font-size:14px;color:var(--muted);margin-top:14px;min-height:1.5em}.empty{grid-column:1/-1;padding:24px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);color:var(--muted)}.label{display:inline-flex;font-size:13px;border-radius:20px;padding:4px 8px;background:#ecf0ed;color:#455a50}.label.enabled{background:#dceee1;color:#1d5a39}dialog{border:1px solid var(--line);border-radius:var(--radius);padding:25px;width:min(480px,calc(100% - 24px));color:var(--ink);box-shadow:0 20px 70px #142c2755}dialog::backdrop{background:#143c2f7a}dialog p{margin-block:10px 18px;color:var(--muted)}@media(max-width:900px){.hero{align-items:start;flex-direction:column}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){
+.wrap{padding-inline:max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-right))}
+header{backdrop-filter:none;background:var(--bg)}
+.header{min-height:62px;padding-top:env(safe-area-inset-top);gap:10px}
+.brand{font-size:17px;gap:9px}.mark{width:34px;height:34px;border-radius:10px;font-size:19px}
+.preview{font-size:12px;padding:5px 8px}
+main{padding-top:18px}
+.hero{padding:23px 18px;gap:20px;border-radius:22px}.hero h1{font-size:clamp(38px,9.5vw,54px)}.hero p{margin-top:10px}
+.summary{width:100%;gap:5px}.stat{min-width:0;padding:8px}.stat dt{font-size:12px}.stat dd{font-size:21px}
+.section{margin-top:24px}.section-head{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}.section-head h2{font-size:22px}
+.tools,.fields{display:grid;grid-template-columns:minmax(0,1fr) auto;width:100%}
+.tools{grid-template-columns:minmax(0,1fr);gap:8px}
+.input{width:100%;min-width:0;min-height:44px;font-size:16px}.button,.chip{min-height:44px}
+#run{justify-self:start}.grid{grid-template-columns:minmax(0,1fr);gap:13px}
+.photo{height:clamp(156px,51vw,255px)}.card-body{padding:15px;overflow-wrap:anywhere}
+}
+@media(max-width:350px){.fields{grid-template-columns:minmax(0,1fr)}}
+
+.dock{--pad:7px;--active-tab:0;position:fixed;z-index:5;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(380px,calc(100% - 26px - env(safe-area-inset-left) - env(safe-area-inset-right)));padding:var(--pad);border:1px solid #e5f5ee39;border-radius:23px;background:#142a25f2;box-shadow:0 12px 34px #152b4260,inset 0 1px #f8fffa25;isolation:isolate}
+@supports(backdrop-filter:blur(12px)){.dock{background:#182b27dc;backdrop-filter:blur(20px) saturate(140%)}}
+.dock::before{content:'';position:absolute;z-index:-1;left:var(--pad);top:var(--pad);bottom:var(--pad);width:calc((100% - 2 * var(--pad)) / 3);border-radius:16px;background:radial-gradient(ellipse at 50% 0%,#6ae5b34d,transparent 86%),linear-gradient(145deg,#92d9bd25,#d5d9ff1f);box-shadow:inset 0 0 0 1px #bbf8dc29;transform:translateX(calc(var(--active-tab) * 100%));transition:transform 300ms cubic-bezier(.2,.72,.25,1)}
+.dock button{display:grid;justify-items:center;align-content:center;gap:4px;min-width:0;min-height:53px;padding:5px 2px;border:0;border-radius:16px;background:transparent;color:#d0ded9;font-size:clamp(12px,3vw,14px);font-weight:570;line-height:1.15;transition:color 180ms ease,background 180ms ease}
+.dock button:hover{background:#fff1}.dock button[aria-current]{color:#bcf3db;font-weight:720}.dock button:focus-visible{outline:2px solid #bcf3db;outline-offset:-3px}
+.dock svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:transform 220ms ease,filter 220ms ease}
+.dock button[aria-current] svg{transform:translateY(-1px);filter:drop-shadow(0 0 5px #8bfacb60)}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap header"><div class="brand"><span class="mark" aria-hidden="true">K</span>Kamuti Leads</div><span class="preview">Preview data</span></div></header>
+<main class="wrap">
+<section class="hero"><div><h1 id="pageTitle">Event leads</h1><p id="pageCopy">Discover announcements from venues and event organizers in Addis Ababa.</p></div><dl class="summary"><div class="stat"><dt>Event leads</dt><dd id="total"></dd></div><div class="stat"><dt>Accounts on</dt><dd id="enabled"></dd></div><div class="stat"><dt>Live feed</dt><dd>Off</dd></div></dl></section>
+<section class="section" id="leadsView"><div class="section-head"><h2>Recent discoveries</h2><div class="tools"><div class="filters" aria-label="Filter leads"><button class="chip" data-filter="all" aria-pressed="true">All leads</button><button class="chip" data-filter="saved" aria-pressed="false">Saved</button></div><input id="search" class="input" type="search" placeholder="Search events" aria-label="Search events"></div></div><div class="grid" id="leadGrid"></div></section>
+<section class="section" id="accountsView" hidden><div class="section-head"><h2>Tracked accounts</h2><form id="add" class="fields"><input id="username" class="input" placeholder="Instagram username" aria-label="Instagram username" maxlength="31" required><button class="button primary">Add account</button></form></div><div class="grid" id="accountGrid"></div></section>
+<section class="section" id="statusView" hidden><div class="section-head"><h2>Latest checks</h2><button class="button primary" id="run">Run due checks</button></div><div class="grid" id="statusGrid"></div></section>
+<p id="notice" class="notice" role="status"></p>
+</main>
+<nav class="dock" aria-label="Dashboard">
+<button type="button" data-view="leads" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="3"/><path d="M7.5 3.5v4m9-4v4m-13 3.5h17m-12 4.5h3m1.5 0h2.5"/></svg><span>Event leads</span></button>
+<button type="button" data-view="accounts"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.1"/><path d="M3.5 19.5v-1.2a4.3 4.3 0 0 1 4.3-4.3h4.4a4.3 4.3 0 0 1 4.3 4.3v1.2m.6-14.4a3.1 3.1 0 0 1 0 6.1m1.3 3.1a4.3 4.3 0 0 1 2.2 3.8v1.4"/></svg><span>Accounts</span></button>
+<button type="button" data-view="status"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg><span>Check status</span></button>
+</nav>
+<dialog id="details"><h2 id="detailTitle"></h2><p id="detailText"></p><form method="dialog"><button class="button">Close</button></form></dialog>
+<script>
+const events=[
+ {id:'design', title:'Addis Design Forum', type:'Conference', venue:'Addis Ababa', username:'sample_addis_venue', image:'design.webp', description:'A sample announcement for a design conference with workshops and a vendor exhibition.', published:'19 Nov 2026'},
+ {id:'expo', title:'Small Business Expo', type:'Exhibition', venue:'Addis Ababa', username:'sample_expo_organizer', image:'expo.webp', description:'A sample announcement for an exhibition, with product showcases and networking.', published:'18 Nov 2026'},
+ {id:'hospitality', title:'Hospitality Workshop', type:'Workshop', venue:'Addis Ababa', username:'sample_conference_host', image:'hospitality.webp', description:'A sample announcement for a workshop for venue and hospitality teams.', published:'17 Nov 2026'}
+];
+const initial=[{username:'sample_addis_venue',enabled:true, checked:'19 Nov 2026 · 21:05'},{username:'sample_expo_organizer',enabled:false,checked:''},{username:'sample_conference_host',enabled:true,checked:'19 Nov 2026 · 21:10'}];
+function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
+function write(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch{}}
+let accounts=read('addis-preview-accounts',initial);
+const saved=new Set(read('addis-preview-saved',[]));
+let filters='all';
+const $=id=>document.getElementById(id);
+function node(tag,text,className){const item=document.createElement(tag);if(text!==undefined)item.textContent=text;if(className)item.className=className;return item}
+function button(label, action){const item=node('button',label,'button');item.type='button';item.onclick=action;return item}
+function noResults(text){return node('div',text,'empty')}
+function render(){
+ $('total').textContent=events.length;
+ $('enabled').textContent=accounts.filter(account=>account.enabled).length;
+ const query=$('search').value.trim().toLowerCase();
+ const matched=events.filter(event=>(filters==='all'||saved.has(event.id))&&[event.title,event.type,event.username,event.venue,event.description].join(' ').toLowerCase().includes(query));
+ $('leadGrid').replaceChildren(...(matched.length?matched.map(event=>{
+   const card=node('article',undefined,'card event-card'), photo=node('div',undefined,'photo'), image=node('img');
+   image.src=event.image;image.alt='';image.decoding='async';photo.append(image,node('span',event.type,'tag'));
+   const body=node('div',undefined,'card-body'), actions=node('div',undefined,'card-bar');
+   const open=button('View details',()=>{$('detailTitle').textContent=event.title;$('detailText').textContent=event.description+' Published '+event.published+'.';$('details').showModal()});
+   const save=button(saved.has(event.id)?'Saved':'Save',()=>{
+     if(saved.has(event.id))saved.delete(event.id);else saved.add(event.id);
+     write('addis-preview-saved',[...saved]);render();
+     const replacement=document.querySelector('[data-save="'+event.id+'"]');
+     (replacement||document.querySelector('[data-filter="saved"]')).focus();
+   });
+   save.dataset.save=event.id;save.setAttribute('aria-pressed',saved.has(event.id));actions.append(open,save);
+   body.append(node('h3',event.title),node('div',event.venue+' · '+event.published,'meta'),node('p',event.description),actions);card.append(photo,body);return card;
+ }):[noResults(filters==='saved'?'No saved leads match your search.':'No events match your search.')]));
+ $('accountGrid').replaceChildren(...accounts.map(account=>{
+   const card=node('article',undefined,'card card-body'), bar=node('div',undefined,'card-bar');
+   const toggle=button(account.enabled?'Pause':'Enable',()=>{account.enabled=!account.enabled;write('addis-preview-accounts',accounts);render();document.getElementById('account-'+account.username).focus()});
+   toggle.id='account-'+account.username;
+   bar.append(node('span',account.enabled?'Enabled':'Paused','label'+(account.enabled?' enabled':'')),toggle);card.append(node('h3','@'+account.username),bar);return card;
+ }));
+ $('statusGrid').replaceChildren(...accounts.map(account=>{
+   const card=node('article',undefined,'card card-body');
+   card.append(node('h3','@'+account.username),node('p',account.checked?'Sample check · '+account.checked:'No checks yet'),node('p',account.enabled?'Enabled in preview':'Paused'));return card;
+ }));
+}
+const views={leads:['Event leads','Discover announcements from venues and event organizers in Addis Ababa.'],accounts:['Tracked accounts','Choose which Instagram accounts the monitor should check.'],status:['Check status','See when each account was last checked.']};
+const dock = document.querySelector('.dock');
+const viewButtons = Array.from(dock.querySelectorAll('[data-view]'));
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+let activeTab = 0;
+let viewAnimation;
+viewButtons.forEach((item,index)=>item.onclick=()=>{
+ if(index===activeTab)return;
+ const direction=index>activeTab?1:-1;
+ activeTab=index;
+ const view=item.dataset.view;
+ viewButtons.forEach(button=>button.removeAttribute('aria-current'));
+ item.setAttribute('aria-current','page');
+ dock.style.setProperty('--active-tab',index);
+ viewAnimation?.cancel();
+ Object.keys(views).forEach(key=>$(key+'View').hidden=key!==view);
+ [$('pageTitle').textContent,$('pageCopy').textContent]=views[view];
+ $('notice').textContent='';
+ window.scrollTo({top:0,behavior:'instant'});
+ const section=$(view+'View');
+ if(!reduceMotion.matches&&section.animate){
+   viewAnimation=section.animate(
+     [{opacity:0,transform:'translateX('+direction*12+'px)'},{opacity:1,transform:'translateX(0)'}],
+     {duration:240,easing:'cubic-bezier(.2,.72,.25,1)'});
+ }
+});
+document.querySelectorAll('[data-filter]').forEach(item=>item.onclick=()=>{
+ filters=item.dataset.filter;document.querySelectorAll('[data-filter]').forEach(button=>button.setAttribute('aria-pressed',String(button===item)));render();
+});
+$('search').oninput=render;
+$('add').onsubmit=event=>{
+ event.preventDefault();
+ const username=$('username').value.trim().replace(/^@/,'').toLowerCase();
+ if(!/^[a-z0-9_][a-z0-9_.]{0,29}$/.test(username)){$('notice').textContent='Enter a valid Instagram username.';return}
+ const existing=accounts.find(account=>account.username===username);
+ if(existing)existing.enabled=true;else accounts.push({username,enabled:true,checked:''});
+ write('addis-preview-accounts',accounts);$('add').reset();$('notice').textContent='@'+username+' is enabled in the preview.';render();
+};
+$('run').onclick=()=>{$('notice').textContent='Live checks become available when the dashboard is connected to your Google Sheet.'};
+render();
+</script>
+</body>
+</html>
