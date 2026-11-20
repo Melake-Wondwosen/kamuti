@@ -61,8 +61,8 @@ const demoEvents=[
 const initial=[{username:'sample_addis_venue',enabled:true, checked:'19 Nov 2026 · 21:05'},{username:'sample_expo_organizer',enabled:false,checked:''},{username:'sample_conference_host',enabled:true,checked:'19 Nov 2026 · 21:10'}];
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 function write(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch{}}
-let events=demoEvents;
-let accounts=read('addis-preview-accounts',initial);
+let events=[];
+let accounts=[];
 let liveKey='';
 let liveTotal=0;
 let requestInProgress=false;
@@ -77,8 +77,8 @@ function noResults(text){return node('div',text,'empty')}
 function render(){
  $('total').textContent=liveKey?liveTotal:events.length;
  $('feedState').textContent=liveKey?'On':'Off';
- $('add').hidden=Boolean(liveKey);
- $('run').textContent=liveKey?'Refresh feed':'Run due checks';
+ $('add').hidden=true;
+ $('run').textContent=liveKey?'Refresh feed':'Connect live feed';
  $('connection').textContent=liveKey?'Disconnect live feed':'Connect live feed';
  $('enabled').textContent=accounts.filter(account=>account.enabled).length;
  const query=$('search').value.trim().toLowerCase();
@@ -103,7 +103,7 @@ function render(){
    });
    save.dataset.save=event.id;save.setAttribute('aria-pressed',saved.has(event.id));actions.append(open,save);
    body.append(node('h3',event.title),node('div',[event.venue,event.published].filter(Boolean).join(' · '),'meta'),node('p',event.description.length>185?event.description.slice(0,184)+'…':event.description),actions);card.append(photo,body);return card;
- }):[noResults(filters==='saved'?'No saved leads match your search.':'No events match your search.')]));
+ }):[noResults(filters==='saved'?'No saved leads match your search.':liveKey ? (events.length?'No events match your search.':'No event leads have reached the feed yet.') : 'Connect the live feed to see your event leads.')]));
  $('accountGrid').replaceChildren(...accounts.map(account=>{
    const card=node('article',undefined,'card card-body'), bar=node('div',undefined,'card-bar');
    const toggle=button(account.enabled?'Pause':'Enable',()=>{account.enabled=!account.enabled;write('addis-preview-accounts',accounts);render();document.getElementById('account-'+account.username).focus()});
@@ -190,22 +190,25 @@ async function refreshLive(key,opening=false){
    if(!Array.isArray(payload.events)||!Array.isArray(payload.accounts))throw new Error('The feed returned invalid data.');
    if(!opening&&liveKey!==key)return;
    events=payload.events;accounts=payload.accounts;liveTotal=payload.totalLeads;liveKey=key;
-   if(opening){$('connectForm').reset();$('connect').close();clearInterval(liveTimer);liveTimer=setInterval(()=>{if(liveKey)refreshLive(liveKey)},60000)}
+   if(opening){try{sessionStorage.setItem('kamuti-session',key)}catch{} $('connectForm').reset();$('connect').close();clearInterval(liveTimer);liveTimer=setInterval(()=>{if(liveKey)refreshLive(liveKey)},60000)}
    updateLeadAlerts(events);render();$('notice').textContent='Live data from Google Sheets. Manage tracked accounts in the Sheet.';
  }catch(error){
    const message=error instanceof SyntaxError?'The Vercel API is not available. Redeploy the live package.':error.message;
-   if(opening)$('connectError').textContent=message;else if(liveKey===key)$('notice').textContent=message;
+   if(opening){$('connectError').textContent=message;if(!$('connect').open)$('connect').showModal();}else if(liveKey===key)$('notice').textContent=message;
  }finally{requestInProgress=false;$('connectSubmit').disabled=false}
 }
 $('connection').onclick=()=>{
  if(!liveKey){$('connectError').textContent='';$('connect').showModal();return}
- $('leadAlert').hidden=true;clearInterval(liveTimer);liveKey='';events=demoEvents;accounts=read('addis-preview-accounts',initial);
- $('notice').textContent='Live feed disconnected. Showing sample data.';render();
+ $('leadAlert').hidden=true;clearInterval(liveTimer);liveKey='';events=[];accounts=[];try{sessionStorage.removeItem('kamuti-session')}catch{}
+ $('notice').textContent='Live feed disconnected.';render();
 };
 $('cancelConnect').onclick=()=>{if(!requestInProgress){$('connect').close();$('connectForm').reset()}};
 $('connectForm').onsubmit=event=>{event.preventDefault();refreshLive($('accessKey').value.trim(),true)};
-$('run').onclick=()=>{if(liveKey)refreshLive(liveKey);else $('notice').textContent='Use Connect live feed to read the latest Apps Script results.'};
+$('run').onclick=()=>{if(liveKey)refreshLive(liveKey);else $('connection').click()};
 render();
+let sessionKey='';
+try { sessionKey=sessionStorage.getItem('kamuti-session') || ''; } catch {}
+if(sessionKey) refreshLive(sessionKey,true); else $('connect').showModal();
 </script>
 </body>
 </html>
