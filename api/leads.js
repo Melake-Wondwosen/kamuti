@@ -14,14 +14,11 @@ function sessionCookie(value, seconds) {
 
 async function authorize(request, response) {
   const secret = process.env.KAMUTI_ACCESS_KEY;
-  let users;
-  try { users = JSON.parse(process.env.KAMUTI_USERS_JSON || '{}'); } catch {}
-  if (!secret || secret.length < 32 || !users || typeof users !== 'object' || !Object.keys(users).length) {
-    response.status(503).json({error:'User accounts have not been configured.'});
-    return false;
-  }
-  function lookup(name) {
-    return namePattern.test(name) && Object.hasOwn(users, name) && hashPattern.test(users[name]) ? users[name] : '';
+  async function lookup(name) {
+    if (!name || !namePattern.test(name)) return '';
+    const result = await bridge({action:'lookupUser',username:name});
+    if (!result?.ok || typeof result.record !== 'string') throw new Error('User lookup unavailable');
+    return hashPattern.test(result.record) ? result.record : '';
   }
   if (request.method === 'POST') {
     if (!(request.headers['content-type'] || '').startsWith('application/json')) {
@@ -33,7 +30,7 @@ async function authorize(request, response) {
       response.status(204).end(); return false;
     }
     const name = typeof username === 'string' ? username.trim().toLowerCase() : '';
-    const record = lookup(name);
+    const record = await lookup(name);
     const [salt, expected] = (record || dummy).split(':');
     const validInput = typeof password === 'string' && password.length > 0 && password.length <= 256;
     const actual = await derive(validInput ? password : '', Buffer.from(salt,'hex'), 32);
@@ -45,7 +42,7 @@ async function authorize(request, response) {
   } else {
     const cookie = (request.headers.cookie || '').split(/;\s*/).find(v => v.startsWith('__Host-kamuti='));
     const [name, expires, signature] = (cookie || '').slice('__Host-kamuti='.length).split('~');
-    const record = lookup(name || '');
+    const record = await lookup(name || '');
     if (record && Number(expires) > Date.now()/1000 && /^[a-f0-9]{64}$/.test(signature || '')) {
       const expected = sign(name + '~' + expires, record, secret);
       if (timingSafeEqual(Buffer.from(expected), Buffer.from(signature))) return true;
@@ -65,29 +62,35 @@ module.exports = async function handler(request, response) {
   if (!KAMUTI_ACCESS_KEY || !KAMUTI_BRIDGE_KEY || !KAMUTI_SCRIPT_URL) {
     return response.status(503).json({error: 'The live connection is not configured in Vercel.'});
   }
-  if (!await authorize(request, response)) return;
+
 
   try {
     if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(KAMUTI_SCRIPT_URL)) {
       return response.status(503).json({error: 'The Apps Script /exec URL is invalid.'});
     }
-    const signal = AbortSignal.timeout(12000);
-    let upstream = await fetch(KAMUTI_SCRIPT_URL, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({key: KAMUTI_BRIDGE_KEY}), redirect: 'manual', signal,
-    });
-    // Content Service usually redirects the generated response to googleusercontent.
-    if ([301, 302, 303].includes(upstream.status)) {
-      const location = new URL(upstream.headers.get('location') || '');
-      if (location.origin !== 'https://script.googleusercontent.com') {
-        return response.status(502).json({error: 'Apps Script redirected to a sign-in page. Check deployment access.'});
-      }
-      upstream = await fetch(location, {redirect: 'error', signal});
-    }
-    const data = upstream.ok ? await upstream.json() : null;
+    if (!await authorize(request, response)) return;
+    const data = await bridge({});
     if (!data?.ok) return response.status(502).json({error: 'Apps Script rejected the request. Check its bridge key, Sheet ID, and permissions.'});
     return response.status(200).json({events: data.events, accounts: data.accounts, totalLeads: data.totalLeads});
   } catch (error) {
     return response.status(502).json({error: 'Could not read the Apps Script response.'});
   }
 };
+
+async function bridge(params) {
+    const signal = AbortSignal.timeout(12000);
+    let upstream = await fetch(process.env.KAMUTI_SCRIPT_URL, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({...params,key:process.env.KAMUTI_BRIDGE_KEY}), redirect: 'manual', signal,
+    });
+    // Content Service usually redirects the generated response to googleusercontent.
+    if ([301, 302, 303].includes(upstream.status)) {
+      const location = new URL(upstream.headers.get('location') || '');
+      if (location.origin !== 'https://script.googleusercontent.com') {
+        throw new Error('Invalid redirect');
+      }
+      upstream = await fetch(location, {redirect: 'error', signal});
+    }
+    const data = upstream.ok ? await upstream.json() : null;
+    return data;
+}
