@@ -33,9 +33,12 @@ main{padding-top:18px}
 .dock button[aria-current] svg{transform:translateY(-1px);filter:drop-shadow(0 0 5px #8bfacb60)}
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
+html,body{overscroll-behavior-y:contain}
+#pullStatus{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100;background:#12372d;color:white;padding:8px 16px;border-radius:24px;pointer-events:none}
 </style>
 </head>
 <body>
+<div id="pullStatus" role="status" hidden></div>
 <header><div class="wrap header"><div class="brand"><span class="mark" aria-hidden="true">K</span>Kamuti Leads</div><button type="button" id="connection" class="chip">Sign in</button></div></header>
 <main class="wrap">
 <section class="hero"><div><h1 id="pageTitle">Event leads</h1><p id="pageCopy">Discover announcements from venues and event organizers in Addis Ababa.</p></div><dl class="summary"><div class="stat"><dt>Event leads</dt><dd id="total"></dd></div><div class="stat"><dt>Accounts on</dt><dd id="enabled"></dd></div><div class="stat"><dt>Live feed</dt><dd id="feedState">Off</dd></div></dl></section>
@@ -179,6 +182,7 @@ $('showNew').onclick = () => {
  newIds.clear();
  updateLeadAlerts(events);
 };
+let retryTimer;
 async function refreshLive(key,opening=false){
  if(requestInProgress)return;
  requestInProgress=true;
@@ -195,11 +199,16 @@ async function refreshLive(key,opening=false){
    updateLeadAlerts(events);render();$('notice').textContent='Live data from Google Sheets. Manage tracked accounts in the Sheet.';
  }catch(error){
    const message=error instanceof SyntaxError?'The Vercel API is not available. Redeploy the live package.':error.message;
-   if(opening){$('connectError').textContent=message;if(!$('connect').open)$('connect').showModal();}else if(liveKey===key)$('notice').textContent=message;
+   $('notice').textContent=message;
+   if(opening && !$('connect').open){
+     $('connection').textContent='Retry connection';
+     clearTimeout(retryTimer);
+     retryTimer=setTimeout(()=>refreshLive('authenticated',true),15000);
+   } else if($('connect').open) $('connectError').textContent=message;
  }finally{requestInProgress=false;$('connectSubmit').disabled=false}
 }
 $('connection').onclick=async ()=>{
- if(!liveKey){$('connect').showModal();return}
+ if(!liveKey){clearTimeout(retryTimer);await refreshLive('authenticated',true);return}
  try{
    const response=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({logout:true})});
    if(!response.ok)throw new Error();
@@ -213,11 +222,44 @@ $('connectForm').onsubmit=async event=>{
    const response=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:$('loginName').value,password:$('loginPassword').value})});
    if(!response.ok)throw new Error((await response.json()).error);
    $('loginPassword').value='';
+   $('connect').close();
    await refreshLive('authenticated',true);
  }catch(error){$('connectError').textContent=error.message}
  finally{$('connectSubmit').disabled=false}
 };
 $('run').onclick=()=>{if(liveKey)refreshLive(liveKey);else $('connection').click()};
+let pullStart;
+const indicator=$('pullStatus');
+function cancelPull(){
+ pullStart=null;
+ indicator.hidden=true;
+}
+document.addEventListener('touchstart',event=>{
+ if(requestInProgress || !liveKey || window.scrollY>0 || event.touches.length!==1 || document.querySelector('dialog[open]')) return;
+ const touch=event.touches[0];
+ pullStart={x:touch.clientX,y:touch.clientY,ready:false};
+},{passive:true});
+document.addEventListener('touchmove',event=>{
+ if(!pullStart)return;
+ const touch=event.touches[0];
+ const distance=touch.clientY-pullStart.y;
+ if(event.touches.length!==1 || distance<0 || window.scrollY>0 || Math.abs(touch.clientX-pullStart.x)>Math.max(15,distance))return cancelPull();
+ if(distance<10){pullStart.ready=false;indicator.hidden=true;return}
+ if(event.cancelable)event.preventDefault();
+ pullStart.ready=distance>=72;
+ indicator.textContent=pullStart.ready?'Release to refresh':'Pull down to refresh';
+ indicator.hidden=false;
+},{passive:false});
+document.addEventListener('touchcancel',cancelPull);
+document.addEventListener('touchend',async ()=>{
+ if(!pullStart)return;
+ const ready=pullStart.ready;
+ cancelPull();
+ if(!ready || !liveKey || requestInProgress)return;
+ indicator.textContent='Refreshing…';
+ indicator.hidden=false;
+ try{await refreshLive(liveKey)}finally{indicator.hidden=true}
+});
 render();
 try{sessionStorage.removeItem('kamuti-session')}catch{}
 refreshLive('authenticated',true);
