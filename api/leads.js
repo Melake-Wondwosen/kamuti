@@ -21,7 +21,7 @@ async function authorize(request, response) {
     if (!result?.ok || typeof result.record !== 'string') throw new Error('User lookup unavailable');
     return hashPattern.test(result.record) ? result.record : '';
   }
-  if (request.method === 'POST') {
+  if (request.method === 'POST' && request.body?.action !== 'refreshAccounts') {
     if (!(request.headers['content-type'] || '').startsWith('application/json')) {
       response.status(415).end(); return false;
     }
@@ -70,6 +70,15 @@ module.exports = async function handler(request, response) {
       return response.status(503).json({error: 'The Apps Script /exec URL is invalid.'});
     }
     if (!await authorize(request, response)) return;
+    if(request.method === 'POST' && request.body?.action === 'refreshAccounts'){
+      const names=request.body.usernames;
+      if(!(request.headers['content-type'] || '').startsWith('application/json') || !Array.isArray(names) || !names.length || names.length>300 || names.some(name=>typeof name!=='string' || !/^[a-z0-9_.]{1,30}$/i.test(name))){
+        return response.status(400).json({error:'Select enabled Instagram accounts.'});
+      }
+      const result=await bridge({action:'refreshAccounts',usernames:[...new Set(names)]});
+      if(!result?.ok || !Number.isInteger(result.queued))return response.status(409).json({error:result?.error || 'Could not queue the selected accounts.'});
+      return response.status(202).json({queued:result.queued});
+    }
     const data = await bridge({});
     if (!data?.ok) return response.status(502).json({error: 'Apps Script rejected the request. Check its bridge key, Sheet ID, and permissions.'});
     return response.status(200).json({events: data.events, accounts: data.accounts, totalLeads: data.totalLeads});
