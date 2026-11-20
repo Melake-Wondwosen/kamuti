@@ -43,7 +43,7 @@ html,body{overscroll-behavior-y:contain}
 <main class="wrap">
 <section class="hero"><div><h1 id="pageTitle">Event leads</h1><p id="pageCopy">Discover announcements from venues and event organizers in Addis Ababa.</p></div><dl class="summary"><div class="stat"><dt>Event leads</dt><dd id="total"></dd></div><div class="stat"><dt>Accounts on</dt><dd id="enabled"></dd></div><div class="stat"><dt>Live feed</dt><dd id="feedState">Off</dd></div></dl></section>
 <section class="section" id="leadsView"><div class="section-head"><h2>Recent discoveries</h2><div class="tools"><div class="filters" aria-label="Filter leads"><button class="chip" data-filter="all" aria-pressed="true">All leads</button><button class="chip" data-filter="saved" aria-pressed="false">Saved</button></div><input id="search" class="input" type="search" placeholder="Search events" aria-label="Search events"></div></div><div class="grid" id="leadGrid"></div></section>
-<section class="section" id="accountsView" hidden><div class="section-head"><h2>Tracked accounts</h2><form id="add" class="fields"><input id="username" class="input" placeholder="Instagram username" aria-label="Instagram username" maxlength="31" required><button class="button primary">Add account</button></form></div><div class="grid" id="accountGrid"></div></section>
+<section class="section" id="accountsView" hidden><div class="section-head"><h2>Tracked accounts</h2><button id="refreshSelected" type="button" class="button primary" disabled>Refresh selected accounts</button><form id="add" class="fields"><input id="username" class="input" placeholder="Instagram username" aria-label="Instagram username" maxlength="31" required><button class="button primary">Add account</button></form></div><p id="queueStatus" role="status"></p><div class="grid" id="accountGrid"></div></section>
 <section class="section" id="statusView" hidden><div class="section-head"><h2>Latest checks</h2><button class="button primary" id="run">Run due checks</button></div><div class="grid" id="statusGrid"></div></section>
 <aside id="leadAlert" class="card card-body" hidden><strong id="alertText" role="status"></strong> <button id="showNew" class="button" type="button">View new leads</button></aside>
 <p id="notice" class="notice" role="status"></p>
@@ -72,6 +72,13 @@ let requestInProgress=false;
 let liveTimer;
 function postLink(value){try{const url=new URL(value);return url.origin==='https://www.instagram.com'&&/^\/(p|reel|tv)\/[\w-]+\/?$/.test(url.pathname)?url.origin+url.pathname:''}catch{return ''}}
 const saved=new Set(read('addis-preview-saved',[]));
+const selectedAccounts=new Set();
+let queueBusy=false;
+function updateSelection(){
+ const button=$('refreshSelected');
+ button.disabled=queueBusy || !selectedAccounts.size || !liveKey;
+ button.textContent=selectedAccounts.size?'Refresh selected accounts ('+selectedAccounts.size+')':'Refresh selected accounts';
+}
 let filters='all';
 const $=id=>document.getElementById(id);
 function node(tag,text,className){const item=document.createElement(tag);if(text!==undefined)item.textContent=text;if(className)item.className=className;return item}
@@ -107,9 +114,18 @@ function render(){
    save.dataset.save=event.id;save.setAttribute('aria-pressed',saved.has(event.id));actions.append(open,save);
    body.append(node('h3',event.title),node('div',[event.venue,event.published].filter(Boolean).join(' · '),'meta'),node('p',event.description.length>185?event.description.slice(0,184)+'…':event.description),actions);card.append(photo,body);return card;
  }):[noResults(filters==='saved'?'No saved leads match your search.':liveKey ? (events.length?'No events match your search.':'No event leads have reached the feed yet.') : 'Connect the live feed to see your event leads.')]));
+ for(const name of selectedAccounts)if(!accounts.some(a=>a.enabled && a.username===name))selectedAccounts.delete(name);
+ updateSelection();
  $('accountGrid').replaceChildren(...accounts.map(account=>{
    const card=node('article',undefined,'card card-body'), bar=node('div',undefined,'card-bar');
    const toggle=button(account.enabled?'Pause':'Enable',()=>{account.enabled=!account.enabled;write('addis-preview-accounts',accounts);render();document.getElementById('account-'+account.username).focus()});
+   if(liveKey && account.enabled){
+     const label=node('label','Select ');
+     const checkbox=node('input'); checkbox.type='checkbox'; checkbox.checked=selectedAccounts.has(account.username);
+     checkbox.setAttribute('aria-label','Select @'+account.username);
+     checkbox.onchange=()=>{if(checkbox.checked)selectedAccounts.add(account.username);else selectedAccounts.delete(account.username);updateSelection()};
+     label.append(checkbox);bar.append(label);
+   }
    toggle.id='account-'+account.username;
    bar.append(node('span',account.enabled?'Enabled':'Paused','label'+(account.enabled?' enabled':'')));if(!liveKey)bar.append(toggle);card.append(node('h3','@'+account.username),bar);return card;
  }));
@@ -195,7 +211,7 @@ async function refreshLive(key,opening=false){
    if(!Array.isArray(payload.events)||!Array.isArray(payload.accounts))throw new Error('The feed returned invalid data.');
    if(!opening&&liveKey!==key)return;
    events=payload.events;accounts=payload.accounts;liveTotal=payload.totalLeads;liveKey=key;
-   if(opening){$('connectForm').reset();$('connect').close();clearInterval(liveTimer);liveTimer=setInterval(()=>{if(liveKey)refreshLive(liveKey)},60000)}
+   if(opening){$('connectForm').reset();$('connect').close();clearInterval(liveTimer);liveTimer=setInterval(()=>{if(liveKey && !document.hidden)refreshLive(liveKey)},30000)}
    updateLeadAlerts(events);render();$('notice').textContent='Live data from Google Sheets. Manage tracked accounts in the Sheet.';
  }catch(error){
    const message=error instanceof SyntaxError?'The Vercel API is not available. Redeploy the live package.':error.message;
@@ -228,6 +244,19 @@ $('connectForm').onsubmit=async event=>{
  finally{$('connectSubmit').disabled=false}
 };
 $('run').onclick=()=>{if(liveKey)refreshLive(liveKey);else $('connection').click()};
+document.addEventListener('visibilitychange',()=>{if(liveKey && !document.hidden)refreshLive(liveKey)});
+$('refreshSelected').onclick=async ()=>{
+ if(queueBusy || !liveKey || !selectedAccounts.size)return;
+ const usernames=[...selectedAccounts];
+ queueBusy=true;updateSelection();
+ try{
+   const response=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'refreshAccounts',usernames})});
+   const result=await response.json();
+   if(!response.ok)throw new Error(result.error || 'Could not queue refresh.');
+   $('queueStatus').textContent=result.queued+' queued for the next monitor run. See Check status for results.';
+ }catch(error){$('queueStatus').textContent=error.message}
+ finally{queueBusy=false;updateSelection()}
+};
 let pullStart;
 const indicator=$('pullStatus');
 function cancelPull(){
