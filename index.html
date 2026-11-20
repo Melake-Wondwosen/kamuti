@@ -42,6 +42,7 @@ main{padding-top:18px}
 <section class="section" id="leadsView"><div class="section-head"><h2>Recent discoveries</h2><div class="tools"><div class="filters" aria-label="Filter leads"><button class="chip" data-filter="all" aria-pressed="true">All leads</button><button class="chip" data-filter="saved" aria-pressed="false">Saved</button></div><input id="search" class="input" type="search" placeholder="Search events" aria-label="Search events"></div></div><div class="grid" id="leadGrid"></div></section>
 <section class="section" id="accountsView" hidden><div class="section-head"><h2>Tracked accounts</h2><form id="add" class="fields"><input id="username" class="input" placeholder="Instagram username" aria-label="Instagram username" maxlength="31" required><button class="button primary">Add account</button></form></div><div class="grid" id="accountGrid"></div></section>
 <section class="section" id="statusView" hidden><div class="section-head"><h2>Latest checks</h2><button class="button primary" id="run">Run due checks</button></div><div class="grid" id="statusGrid"></div></section>
+<aside id="leadAlert" class="card card-body" hidden><strong id="alertText" role="status"></strong> <button id="showNew" class="button" type="button">View new leads</button></aside>
 <p id="notice" class="notice" role="status"></p>
 </main>
 <nav class="dock" aria-label="Dashboard">
@@ -152,6 +153,32 @@ $('add').onsubmit=event=>{
  if(existing)existing.enabled=true;else accounts.push({username,enabled:true,checked:''});
  write('addis-preview-accounts',accounts);$('add').reset();$('notice').textContent='@'+username+' is enabled in the preview.';render();
 };
+const seenKey = 'kamuti-known-event-ids-v1';
+let knownIds = read(seenKey, null);
+let newIds = new Set(read('kamuti-unread-event-ids', []));
+function updateLeadAlerts(items) {
+ const ids = items.map(item => String(item.id));
+ if (Array.isArray(knownIds)) {
+   const previous = new Set(knownIds);
+   for (const id of ids) if (!previous.has(id)) newIds.add(id);
+ }
+ knownIds = [...new Set([...(knownIds || []), ...ids])].slice(-10000);
+ write(seenKey, knownIds);
+ newIds = new Set(ids.filter(id => newIds.has(id)));
+ write('kamuti-unread-event-ids', [...newIds]);
+ $('leadAlert').hidden = newIds.size === 0;
+ $('alertText').textContent = newIds.size === 1 ? '1 new event lead' : newIds.size + ' new event leads';
+}
+$('showNew').onclick = () => {
+ const first = events.findIndex(item => newIds.has(String(item.id)));
+ viewButtons[0].click();
+ $('search').value = '';
+ document.querySelector('[data-filter="all"]').click();
+ const card = $('leadGrid').children[first];
+ if (card) { card.tabIndex = -1; card.focus(); card.scrollIntoView({block:'center'}); }
+ newIds.clear();
+ updateLeadAlerts(events);
+};
 async function refreshLive(key,opening=false){
  if(requestInProgress)return;
  requestInProgress=true;
@@ -164,7 +191,7 @@ async function refreshLive(key,opening=false){
    if(!opening&&liveKey!==key)return;
    events=payload.events;accounts=payload.accounts;liveTotal=payload.totalLeads;liveKey=key;
    if(opening){$('connectForm').reset();$('connect').close();clearInterval(liveTimer);liveTimer=setInterval(()=>{if(liveKey)refreshLive(liveKey)},60000)}
-   render();$('notice').textContent='Live data from Google Sheets. Manage tracked accounts in the Sheet.';
+   updateLeadAlerts(events);render();$('notice').textContent='Live data from Google Sheets. Manage tracked accounts in the Sheet.';
  }catch(error){
    const message=error instanceof SyntaxError?'The Vercel API is not available. Redeploy the live package.':error.message;
    if(opening)$('connectError').textContent=message;else if(liveKey===key)$('notice').textContent=message;
@@ -172,7 +199,7 @@ async function refreshLive(key,opening=false){
 }
 $('connection').onclick=()=>{
  if(!liveKey){$('connectError').textContent='';$('connect').showModal();return}
- clearInterval(liveTimer);liveKey='';events=demoEvents;accounts=read('addis-preview-accounts',initial);
+ $('leadAlert').hidden=true;clearInterval(liveTimer);liveKey='';events=demoEvents;accounts=read('addis-preview-accounts',initial);
  $('notice').textContent='Live feed disconnected. Showing sample data.';render();
 };
 $('cancelConnect').onclick=()=>{if(!requestInProgress){$('connect').close();$('connectForm').reset()}};
