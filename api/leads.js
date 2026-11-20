@@ -2,6 +2,7 @@ const { createHmac, timingSafeEqual, scrypt } = require('node:crypto');
 const derive = require('node:util').promisify(scrypt);
 const namePattern = /^[a-z0-9_.-]{1,64}$/;
 const hashPattern = /^[0-9a-f]{32}:[0-9a-f]{64}$/;
+const sessionSeconds = 7 * 24 * 60 * 60;
 const dummy = '0'.repeat(32) + ':' + '0'.repeat(64);
 
 function sign(value, hash, secret) {
@@ -35,8 +36,8 @@ async function authorize(request, response) {
     const validInput = typeof password === 'string' && password.length > 0 && password.length <= 256;
     const actual = await derive(validInput ? password : '', Buffer.from(salt,'hex'), 32);
     if (timingSafeEqual(actual, Buffer.from(expected,'hex')) && record && validInput) {
-      const value = name + '~' + (Math.floor(Date.now()/1000) + 43200);
-      response.setHeader('Set-Cookie', sessionCookie(value + '~' + sign(value, record, secret), 43200));
+      const value = name + '~' + (Math.floor(Date.now()/1000) + sessionSeconds);
+      response.setHeader('Set-Cookie', sessionCookie(value + '~' + sign(value, record, secret), sessionSeconds));
       response.status(204).end(); return false;
     }
   } else {
